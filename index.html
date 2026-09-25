@@ -1,1 +1,402 @@
-https://claude.ai/artifact/FC2QXt8AiebucW1iiRtUCY
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Number Four in a Row</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --cream:#FBF6EC;
+  --chalk:#2E5241;
+  --chalk-dark:#1E382C;
+  --gold:#E8A33D;
+  --p1:#E4572E;
+  --p1-soft:#FBD9CB;
+  --p2:#2E86AB;
+  --p2-soft:#CDE7F0;
+  --ink:#22301F;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+*{box-sizing:border-box;}
+html{scroll-padding-top:env(safe-area-inset-top,0px);}
+body{
+  margin:0;
+  min-height:100%;
+  background:var(--chalk);
+  background-image:
+    radial-gradient(circle at 15% 20%, rgba(255,255,255,0.04) 0, transparent 40%),
+    radial-gradient(circle at 85% 80%, rgba(255,255,255,0.04) 0, transparent 40%);
+  font-family:'Nunito', sans-serif;
+  color:var(--cream);
+  display:flex;
+  justify-content:center;
+  padding:24px 16px 48px;
+}
+@media (prefers-color-scheme: light){
+  body{ background:var(--chalk); }
+}
+.wrap{ width:100%; max-width:760px; }
+h1{
+  font-family:'Baloo 2', sans-serif;
+  font-weight:800;
+  font-size:clamp(28px,5.5vw,42px);
+  color:var(--gold);
+  text-align:center;
+  margin:0 0 4px;
+  letter-spacing:0.3px;
+}
+.subtitle{
+  text-align:center;
+  color:var(--cream);
+  opacity:0.75;
+  font-size:15px;
+  margin:0 0 22px;
+}
+
+/* players */
+.players{
+  display:flex;
+  gap:10px;
+  justify-content:center;
+  margin-bottom:18px;
+  flex-wrap:wrap;
+}
+.player{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  padding:8px 16px;
+  border-radius:999px;
+  background:rgba(255,255,255,0.06);
+  border:2px solid transparent;
+  font-family:'Baloo 2', sans-serif;
+  font-weight:700;
+  font-size:15px;
+  transition:border-color .2s, background .2s;
+}
+.player .dot{width:14px;height:14px;border-radius:50%;flex:none;}
+.player.p1 .dot{background:var(--p1);}
+.player.p2 .dot{background:var(--p2);}
+.player.active{ background:rgba(255,255,255,0.13); border-color:var(--gold); }
+
+/* draw area */
+.draw-area{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:22px;
+  margin:0 0 26px;
+  flex-wrap:wrap;
+}
+.card{
+  width:112px;
+  height:150px;
+  border-radius:14px;
+  background:var(--cream);
+  color:var(--ink);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-family:'Baloo 2', sans-serif;
+  font-weight:800;
+  font-size:44px;
+  box-shadow:0 10px 0 rgba(0,0,0,0.18), 0 14px 22px rgba(0,0,0,0.25);
+  position:relative;
+  transform:rotate(-2deg);
+  transition:transform .25s ease;
+}
+.card.flip{ animation:flip .5s ease; }
+@keyframes flip{
+  0%{ transform:rotate(-2deg) rotateY(0deg) scale(1); }
+  45%{ transform:rotate(-2deg) rotateY(90deg) scale(1.03); }
+  55%{ transform:rotate(-2deg) rotateY(90deg) scale(1.03); }
+  100%{ transform:rotate(-2deg) rotateY(0deg) scale(1); }
+}
+.card.empty{ color:rgba(34,48,31,0.25); font-size:20px; font-family:'Nunito',sans-serif; font-weight:700;}
+.card-label{
+  position:absolute;
+  bottom:8px;
+  font-family:'Nunito',sans-serif;
+  font-weight:700;
+  font-size:11px;
+  letter-spacing:0.4px;
+  color:rgba(34,48,31,0.45);
+}
+
+.controls{ display:flex; flex-direction:column; gap:10px; align-items:center; }
+button{
+  font-family:'Baloo 2', sans-serif;
+  font-weight:700;
+  font-size:17px;
+  border:none;
+  border-radius:10px;
+  padding:13px 26px;
+  cursor:pointer;
+  background:var(--gold);
+  color:var(--chalk-dark);
+  box-shadow:0 4px 0 #B87A1E;
+  transition:transform .08s ease;
+}
+button:active{ transform:translateY(3px); box-shadow:0 1px 0 #B87A1E; }
+button:disabled{ opacity:0.4; cursor:not-allowed; box-shadow:0 4px 0 rgba(0,0,0,0.15); }
+button.ghost{
+  background:transparent;
+  color:var(--cream);
+  box-shadow:none;
+  border:2px solid rgba(255,255,255,0.25);
+  padding:9px 20px;
+  font-size:14px;
+}
+
+.status{
+  text-align:center;
+  min-height:24px;
+  font-family:'Baloo 2', sans-serif;
+  font-size:18px;
+  margin-bottom:14px;
+  color:var(--gold);
+}
+
+/* board */
+.board{
+  display:grid;
+  grid-template-columns:repeat(7, 1fr);
+  gap:6px;
+  background:var(--chalk-dark);
+  padding:8px;
+  border-radius:16px;
+  box-shadow:inset 0 2px 8px rgba(0,0,0,0.4);
+}
+.cell{
+  aspect-ratio:1;
+  border-radius:50%;
+  background:var(--cream);
+  color:var(--ink);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-family:'Baloo 2', sans-serif;
+  font-weight:700;
+  font-size:clamp(13px,3.4vw,19px);
+  cursor:pointer;
+  transition:transform .12s ease, background .2s ease, color .2s ease;
+  user-select:none;
+  border:none;
+}
+.cell:hover:not(.taken):not(.disabled){ transform:scale(1.08); background:#fff; }
+.cell.taken{ cursor:default; }
+.cell.p1{ background:var(--p1); color:var(--p1-soft); }
+.cell.p2{ background:var(--p2); color:var(--p2-soft); }
+.cell.disabled{ cursor:not-allowed; }
+.cell.hint{ outline:3px solid var(--gold); outline-offset:-3px; }
+.cell.win{ box-shadow:0 0 0 4px var(--gold); }
+
+footer{
+  text-align:center;
+  margin-top:20px;
+  font-size:13px;
+  color:rgba(255,255,255,0.5);
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Four in a Row: Numbers</h1>
+  <p class="subtitle">Draw a card, say the number out loud, then find it on the board.</p>
+
+  <div class="players">
+    <div class="player p1 active" id="p1tag"><span class="dot"></span>Player 1</div>
+    <div class="player p2" id="p2tag"><span class="dot"></span>Player 2</div>
+  </div>
+
+  <div class="draw-area">
+    <div class="card empty" id="card">Tap<br>Draw</div>
+    <div class="controls">
+      <button id="drawBtn">Draw card</button>
+      <button class="ghost" id="newGameBtn">New game</button>
+    </div>
+  </div>
+
+  <p class="status" id="status">&nbsp;</p>
+
+  <div class="board" id="board"></div>
+
+  <footer>42 cards, 6×7 board. Say the number before you claim it!</footer>
+</div>
+
+<script>
+const ROWS = 6, COLS = 7, TOTAL = ROWS * COLS;
+
+let deck = [];
+let board = []; // {num, owner: null|'p1'|'p2'}
+let currentCard = null;
+let turn = 'p1';
+let gameOver = false;
+let winCells = [];
+
+function randomUniqueNumbers(count, min, max){
+  const pool = [];
+  for(let i=min;i<=max;i++) pool.push(i);
+  for(let i=pool.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [pool[i],pool[j]]=[pool[j],pool[i]];
+  }
+  return pool.slice(0,count);
+}
+
+function shuffle(arr){
+  const a = arr.slice();
+  for(let i=a.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]]=[a[j],a[i]];
+  }
+  return a;
+}
+
+function newGame(){
+  const numbers = randomUniqueNumbers(TOTAL, 0, 100);
+  board = shuffle(numbers).map(n => ({num:n, owner:null}));
+  deck = shuffle(numbers);
+  currentCard = null;
+  turn = 'p1';
+  gameOver = false;
+  winCells = [];
+  renderCard();
+  renderBoard();
+  renderStatus('Player 1, draw a card to start.');
+  updatePlayerTags();
+  document.getElementById('drawBtn').disabled = false;
+}
+
+function renderCard(){
+  const el = document.getElementById('card');
+  if(currentCard === null){
+    el.textContent = '';
+    el.classList.add('empty');
+    el.innerHTML = 'Tap<br>Draw';
+  } else {
+    el.classList.remove('empty');
+    el.textContent = currentCard;
+  }
+}
+
+function renderBoard(){
+  const el = document.getElementById('board');
+  el.innerHTML = '';
+  board.forEach((cell, idx) => {
+    const div = document.createElement('div');
+    div.className = 'cell';
+    if(cell.owner) div.classList.add(cell.owner, 'taken');
+    if(winCells.includes(idx)) div.classList.add('win');
+    if(!cell.owner && currentCard !== null && cell.num === currentCard && !gameOver){
+      div.classList.add('hint');
+    }
+    if(cell.owner || gameOver || currentCard === null || cell.num !== currentCard){
+      // only clickable if matches current card and unowned and game active
+    }
+    div.textContent = cell.num;
+    div.addEventListener('click', () => claimCell(idx));
+    el.appendChild(div);
+  });
+}
+
+function renderStatus(msg){
+  document.getElementById('status').textContent = msg;
+}
+
+function updatePlayerTags(){
+  document.getElementById('p1tag').classList.toggle('active', turn === 'p1' && !gameOver);
+  document.getElementById('p2tag').classList.toggle('active', turn === 'p2' && !gameOver);
+}
+
+function drawCard(){
+  if(gameOver) return;
+  if(deck.length === 0){
+    renderStatus("No cards left. It's a draw!");
+    document.getElementById('drawBtn').disabled = true;
+    return;
+  }
+  currentCard = deck.pop();
+  const cardEl = document.getElementById('card');
+  cardEl.classList.remove('flip');
+  void cardEl.offsetWidth;
+  cardEl.classList.add('flip');
+  renderCard();
+  renderBoard();
+  const name = turn === 'p1' ? 'Player 1' : 'Player 2';
+  renderStatus(`${name}: say "${currentCard}", then tap it on the board.`);
+  document.getElementById('drawBtn').disabled = true;
+}
+
+function claimCell(idx){
+  if(gameOver) return;
+  const cell = board[idx];
+  if(cell.owner) return;
+  if(currentCard === null || cell.num !== currentCard) return;
+
+  cell.owner = turn;
+  currentCard = null;
+  renderCard();
+  renderBoard();
+
+  const win = checkWin(turn);
+  if(win){
+    winCells = win;
+    gameOver = true;
+    renderBoard();
+    const name = turn === 'p1' ? 'Player 1' : 'Player 2';
+    renderStatus(`🎉 ${name} gets four in a row and wins!`);
+    document.getElementById('drawBtn').disabled = true;
+    updatePlayerTags();
+    return;
+  }
+
+  if(deck.length === 0){
+    gameOver = true;
+    renderStatus("All cards drawn. It's a draw — well played both!");
+    document.getElementById('drawBtn').disabled = true;
+    updatePlayerTags();
+    return;
+  }
+
+  turn = turn === 'p1' ? 'p2' : 'p1';
+  updatePlayerTags();
+  const name = turn === 'p1' ? 'Player 1' : 'Player 2';
+  renderStatus(`${name}, draw a card.`);
+  document.getElementById('drawBtn').disabled = false;
+}
+
+function checkWin(player){
+  const dirs = [[1,0],[0,1],[1,1],[1,-1]];
+  for(let r=0;r<ROWS;r++){
+    for(let c=0;c<COLS;c++){
+      const idx = r*COLS+c;
+      if(board[idx].owner !== player) continue;
+      for(const [dr,dc] of dirs){
+        const line = [idx];
+        let rr=r, cc=c, ok=true;
+        for(let step=1;step<4;step++){
+          rr+=dr; cc+=dc;
+          if(rr<0||rr>=ROWS||cc<0||cc>=COLS){ ok=false; break; }
+          const nidx = rr*COLS+cc;
+          if(board[nidx].owner !== player){ ok=false; break; }
+          line.push(nidx);
+        }
+        if(ok) return line;
+      }
+    }
+  }
+  return null;
+}
+
+document.getElementById('drawBtn').addEventListener('click', drawCard);
+document.getElementById('newGameBtn').addEventListener('click', newGame);
+
+newGame();
+</script>
+</body>
+</html>
